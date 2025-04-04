@@ -10,7 +10,7 @@ SERIAL=config[1] # this line of config file should be like /dev/ttyS2
 logfile=open('watch3batts'+time.strftime('%Y%m%d%H%M%S')+'.csv','w')
 
 def grabBatteryCsv(batteryAddress):
-    command = ' '.join(['timeout 5', COMMAND_UTIL, SERIAL, '--csv_status','|tr -d \'\\n\''])
+    command = ' '.join(['timeout 5', COMMAND_UTIL, SERIAL, batteryAddress, '--csv_status','|tr -d \'\\n\''])
     response = os.popen(command).read()
     return response.split(',')
 
