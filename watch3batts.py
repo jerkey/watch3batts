@@ -15,9 +15,20 @@ def grabBatteryCsv(batteryAddress):
     return response.split(',')
 
 battery1 = grabBatteryCsv('0xFF')
-print(battery1)
+if (len(battery1)) != 77:
+    print('battery1 read error: '+str(battery1))
+    battery1 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 battery2 = grabBatteryCsv('0xDF')
-print(battery2)
+if (len(battery2)) != 77:
+    print('battery2 read error: '+str(battery2))
+    battery2 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 battery3 = grabBatteryCsv('0xEF')
-print(battery3)
+if (len(battery3)) != 77:
+    print('battery3 read error: '+str(battery3))
+    battery3 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+cellVoltages = battery1[6:6+28]+battery2[6:6+28]+battery3[6:6+28]
+print(len(cellVoltages))
+print(cellVoltages)
+print(min(cellVoltages))
+print(max(cellVoltages))
 
