@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+#            0      1       2              3              4               5           6                                                                                                                                                              34
+CSV_HEADER=['time','state','error status','energy count','coloumb count','balancing','c1','c2','c3','c4','c5','c6','c7','c8','c9','c10','c11','c12','c13','c14','c15','c16','c17','c18','c19','c20','c21','c22','c23','c24','c25','c26','c27','c28','soc1','soc2','soc3','soc4','soc5','soc6','soc7','soc8','soc9','soc10','soc11','soc12','soc13','soc14','soc15','soc16','soc17','soc18','soc19','soc20','soc21','soc22','soc23','soc24','soc25','soc26','soc27','soc28',
+#            62          63     64                 65        66     67     68     69           70           71           72           73
+            'io status','vbus','contactor status','current','ntc1','ntc2','ntc3','bmsld temp','bmsla temp','bmsud temp','bmsua temp','mcu temp','comm period','pack soap','pack soh']
 
 import serial
 import time
@@ -27,8 +31,11 @@ if (len(battery3)) != 77:
     print('battery3 read error: '+str(battery3))
     battery3 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 cellVoltages = battery1[6:6+28]+battery2[6:6+28]+battery3[6:6+28]
-print(len(cellVoltages))
-print(cellVoltages)
-print(min(cellVoltages))
-print(max(cellVoltages))
-
+cellTemps = battery1[66:74]+battery2[66:74]+battery3[66:74]
+print("battery1 temps: "+str(battery1[66:74]))
+print("battery2 temps: "+str(battery2[66:74]))
+print("battery3 temps: "+str(battery3[66:74]))
+print("max temp: "+str(max(cellTemps)))
+print("min temp: "+str(min(cellTemps)))
+print("min cell voltage: "+str(min(cellVoltages)))
+print("max cell voltage: "+str(max(cellVoltages)))
