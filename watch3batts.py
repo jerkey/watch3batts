@@ -21,6 +21,7 @@ def grabBatteryCsv(batteryAddress):
     return response.split(',')
 
 def getAllBatts():
+    cellVoltages, allTemps = [],[]
     battery1 = grabBatteryCsv('0xFF')
     if (len(battery1)) != 77:
         print('battery1 read error: '+str(battery1))
@@ -33,23 +34,32 @@ def getAllBatts():
     if (len(battery3)) != 77:
         print('battery3 read error: '+str(battery3))
         battery3 = badData
-    cellVoltages = battery1[6:6+28]+battery2[6:6+28]+battery3[6:6+28]
-    cellTemps = battery1[66:74]+battery2[66:74]+battery3[66:74]
-    return cellVoltages, cellTemps
+    for i in range(28):
+        cellVoltages.append(float(battery1[6+i]))
+    for i in range(28):
+        cellVoltages.append(float(battery2[6+i]))
+    for i in range(28):
+        cellVoltages.append(float(battery3[6+i]))
+    for i in range(8):
+        allTemps.append(float(battery1[66+i]))
+    for i in range(8):
+        allTemps.append(float(battery2[66+i]))
+    for i in range(8):
+        allTemps.append(float(battery3[66+i]))
+        cellTemps = allTemps[0:4] + allTemps[8:11] + allTemps[16:19]
+    return cellVoltages, allTemps, cellTemps
 
 while True:
-    cellVoltages, cellTemps = getAllBatts()
-    maxTemp = max(cellTemps)
-    if (float(maxTemp) > 40):
-        print("                  ntc1,ntc2,ntc3,bmsld temp,bmsla temp,bmsud temp,bmsua temp,mcu temp")
-        print("battery1 temps: "+str(cellTemps[0:8]))
-        print("battery2 temps: "+str(cellTemps[8:16]))
-        print("battery3 temps: "+str(cellTemps[16:24]))
+    cellVoltages, allTemps, cellTemps = getAllBatts()
+    maxCellTemp = max(cellTemps)
+    if (maxCellTemp > 50):
+        print("                  ntc1,  ntc2,  ntc3, bmsld, bmsla, bmsud, bmsua, mcu")
+        print("battery1 temps: "+str(allTemps[0:8]))
+        print("battery2 temps: "+str(allTemps[8:16]))
+        print("battery3 temps: "+str(allTemps[16:24]))
     maxCellVoltage = max(cellVoltages)
-    print("max temp: "+str(maxTemp)+"	"+"max cell voltage: "+str(maxCellVoltage),end='	')
-    unixtime = str(int(time.time()))
-    printString = str(cellVoltages)[1:-1]+','+str(cellTemps)[1:-1]
-    timestring = str(time.localtime().tm_hour)+':'+str(time.localtime().tm_min)+':'+str(time.localtime().tm_sec)
-    print(timestring)
-    logfile.write(unixtime+','+printString+'\n')
+    print("max cell temp: "+str(maxCellTemp)+"	"+"max cell voltage: "+str(maxCellVoltage),end='	')
+    print('	Time: {}:{:02d}:{:02d}'.format(time.localtime().tm_hour,time.localtime().tm_min,time.localtime().tm_sec))
+    logString = str(int(time.time()))+','+str(cellVoltages)[1:-1]+','+str(allTemps)[1:-1]
+    logfile.write(logString+'\n')
     time.sleep(6)
