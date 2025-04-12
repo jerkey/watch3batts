@@ -8,7 +8,7 @@ import serial
 import time
 import os
 
-badData = [66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66]
+badData = ['66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66','66']
 
 config=open('watch3batts.conf','r').read().splitlines()
 COMMAND_UTIL=config[0] # this line should be the path to the battery communications executable
@@ -20,24 +20,36 @@ def grabBatteryCsv(batteryAddress):
     response = os.popen(command).read()
     return response.split(',')
 
-battery1 = grabBatteryCsv('0xFF')
-if (len(battery1)) != 77:
-    print('battery1 read error: '+str(battery1))
-    battery1 = badData
-battery2 = grabBatteryCsv('0xDF')
-if (len(battery2)) != 77:
-    print('battery2 read error: '+str(battery2))
-    battery2 = badData
-battery3 = grabBatteryCsv('0xEF')
-if (len(battery3)) != 77:
-    print('battery3 read error: '+str(battery3))
-    battery3 = badData
-cellVoltages = battery1[6:6+28]+battery2[6:6+28]+battery3[6:6+28]
-cellTemps = battery1[66:74]+battery2[66:74]+battery3[66:74]
-print("battery1 temps: "+str(battery1[66:74]))
-print("battery2 temps: "+str(battery2[66:74]))
-print("battery3 temps: "+str(battery3[66:74]))
-print("max temp: "+str(max(cellTemps)))
-print("min temp: "+str(min(cellTemps)))
-print("min cell voltage: "+str(min(cellVoltages)))
-print("max cell voltage: "+str(max(cellVoltages)))
+def getAllBatts():
+    battery1 = grabBatteryCsv('0xFF')
+    if (len(battery1)) != 77:
+        print('battery1 read error: '+str(battery1))
+        battery1 = badData
+    battery2 = grabBatteryCsv('0xDF')
+    if (len(battery2)) != 77:
+        print('battery2 read error: '+str(battery2))
+        battery2 = badData
+    battery3 = grabBatteryCsv('0xEF')
+    if (len(battery3)) != 77:
+        print('battery3 read error: '+str(battery3))
+        battery3 = badData
+    cellVoltages = battery1[6:6+28]+battery2[6:6+28]+battery3[6:6+28]
+    cellTemps = battery1[66:74]+battery2[66:74]+battery3[66:74]
+    return cellVoltages, cellTemps
+
+while True:
+    cellVoltages, cellTemps = getAllBatts()
+    maxTemp = max(cellTemps)
+    if (float(maxTemp) > 40):
+        print("                  ntc1,ntc2,ntc3,bmsld temp,bmsla temp,bmsud temp,bmsua temp,mcu temp")
+        print("battery1 temps: "+str(cellTemps[0:8]))
+        print("battery2 temps: "+str(cellTemps[8:16]))
+        print("battery3 temps: "+str(cellTemps[16:24]))
+    maxCellVoltage = max(cellVoltages)
+    print("max temp: "+str(maxTemp)+"	"+"max cell voltage: "+str(maxCellVoltage),end='	')
+    unixtime = str(int(time.time()))
+    printString = str(cellVoltages)[1:-1]+','+str(cellTemps)[1:-1]
+    timestring = str(time.localtime().tm_hour)+':'+str(time.localtime().tm_min)+':'+str(time.localtime().tm_sec)
+    print(timestring)
+    logfile.write(unixtime+','+printString+'\n')
+    time.sleep(6)
