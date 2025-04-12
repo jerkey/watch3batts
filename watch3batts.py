@@ -8,6 +8,8 @@ import serial
 import time
 import os
 
+badData = [66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66]
+
 config=open('watch3batts.conf','r').read().splitlines()
 COMMAND_UTIL=config[0] # this line should be the path to the battery communications executable
 SERIAL=config[1] # this line of config file should be like /dev/ttyS2
@@ -21,15 +23,15 @@ def grabBatteryCsv(batteryAddress):
 battery1 = grabBatteryCsv('0xFF')
 if (len(battery1)) != 77:
     print('battery1 read error: '+str(battery1))
-    battery1 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    battery1 = badData
 battery2 = grabBatteryCsv('0xDF')
 if (len(battery2)) != 77:
     print('battery2 read error: '+str(battery2))
-    battery2 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    battery2 = badData
 battery3 = grabBatteryCsv('0xEF')
 if (len(battery3)) != 77:
     print('battery3 read error: '+str(battery3))
-    battery3 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    battery3 = badData
 cellVoltages = battery1[6:6+28]+battery2[6:6+28]+battery3[6:6+28]
 cellTemps = battery1[66:74]+battery2[66:74]+battery3[66:74]
 print("battery1 temps: "+str(battery1[66:74]))
