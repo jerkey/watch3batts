@@ -14,6 +14,7 @@ with open('watch3batts.conf','r') as config:
     config = config.read().splitlines()
     COMMAND_UTIL=config[0] # this line should be the path to the battery communications executable
     SERIAL=config[1] # this line of config file should be like /dev/ttyS2
+    WEBUI_URL=config[2] # this line is the web address where we send battery info
 
 logfile=open('watch3batts'+time.strftime('%Y%m%d%H%M%S')+'.csv','w')
 
@@ -21,6 +22,15 @@ def grabBatteryCsv(batteryAddress):
     command = ' '.join(['timeout 5', COMMAND_UTIL, SERIAL, batteryAddress, '--csv_status','|tr -d \'\\n\''])
     response = os.popen(command).read()
     return response.split(',')
+
+def sendBatteryStats(battery_stats):
+    params = []
+    for key in battery_stats:
+        params.append(key+'='+str(battery_stats[key]))
+    query_string = '?'+'&'.join(params)
+    command = 'timeout 3 curl --silent "' + WEBUI_URL + query_string + '"'
+    response = os.popen(command).read()
+    return response
 
 def getAllBatts():
     cellVoltages, allTemps = [],[]
@@ -51,18 +61,21 @@ def getAllBatts():
         cellTemps = allTemps[0:4] + allTemps[8:11] + allTemps[16:19]
     return cellVoltages, allTemps, cellTemps
 
+battery_stats = {} # 'max_cell_voltage','min_cell_voltage','max_cell_temp'
+
 while True:
     cellVoltages, allTemps, cellTemps = getAllBatts()
-    maxCellTemp = max(cellTemps)
-    if (maxCellTemp > 50):
+    battery_stats['max_cell_temp'] = max(cellTemps)
+    if (battery_stats['max_cell_temp'] > 50):
         print("                  ntc1,  ntc2,  ntc3, bmsld, bmsla, bmsud, bmsua, mcu")
         print("battery1 temps: "+str(allTemps[0:8]))
         print("battery2 temps: "+str(allTemps[8:16]))
         print("battery3 temps: "+str(allTemps[16:24]))
-    maxCellVoltage = max(cellVoltages)
-    minCellVoltage = min(cellVoltages)
-    print("max cell temp: "+str(maxCellTemp)+"	"+"max cell voltage: "+str(maxCellVoltage)+"   	"+"min cell voltage: "+str(minCellVoltage),end='	')
+    battery_stats['max_cell_voltage'] = max(cellVoltages)
+    battery_stats['min_cell_voltage'] = min(cellVoltages)
+    print("max cell temp: "+str(battery_stats['max_cell_temp'])+"	"+"max cell voltage: "+str(battery_stats['max_cell_voltage'])+"   	"+"min cell voltage: "+str(battery_stats['min_cell_voltage']),end='	')
     print('	Time: {}:{:02d}:{:02d}'.format(time.localtime().tm_hour,time.localtime().tm_min,time.localtime().tm_sec))
+    sendBatteryStats(battery_stats)
     logString = str(int(time.time()))+','+str(cellVoltages)[1:-1]+','+str(allTemps)[1:-1]
     logfile.write(logString+'\n')
     time.sleep(6)
