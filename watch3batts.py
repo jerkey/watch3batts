@@ -60,7 +60,8 @@ while True:
         print("battery2 temps: "+str(allTemps[8:16]))
         print("battery3 temps: "+str(allTemps[16:24]))
     maxCellVoltage = max(cellVoltages)
-    print("max cell temp: "+str(maxCellTemp)+"	"+"max cell voltage: "+str(maxCellVoltage),end='	')
+    minCellVoltage = min(cellVoltages)
+    print("max cell temp: "+str(maxCellTemp)+"	"+"max cell voltage: "+str(maxCellVoltage)+"   	"+"min cell voltage: "+str(minCellVoltage),end='	')
     print('	Time: {}:{:02d}:{:02d}'.format(time.localtime().tm_hour,time.localtime().tm_min,time.localtime().tm_sec))
     logString = str(int(time.time()))+','+str(cellVoltages)[1:-1]+','+str(allTemps)[1:-1]
     logfile.write(logString+'\n')
