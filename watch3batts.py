@@ -63,7 +63,7 @@ def getAllBatts():
         allTemps.append(float(battery2[66+i]))
     for i in range(8):
         allTemps.append(float(battery3[66+i]))
-        cellTemps = allTemps[0:4] + allTemps[8:11] + allTemps[16:19]
+        cellTemps = allTemps[0:3] + allTemps[8:11] + allTemps[16:19]
     return cellVoltages, allTemps, cellTemps
 
 battery_stats = {} # 'max_cell_voltage','min_cell_voltage','max_cell_temp'
@@ -71,7 +71,7 @@ battery_stats = {} # 'max_cell_voltage','min_cell_voltage','max_cell_temp'
 while True:
     cellVoltages, allTemps, cellTemps = getAllBatts()
     battery_stats['max_cell_temp'] = max(cellTemps)
-    cellTemps[6]=25.0 # TODO: fix battery2 3rd thermistor
+    cellTemps[5]=25.0 # TODO: fix battery2 3rd thermistor
     battery_stats['min_cell_temp'] = min(cellTemps)
     if (battery_stats['max_cell_temp'] > 50):
         print("                  ntc1,  ntc2,  ntc3, bmsld, bmsla, bmsud, bmsua, mcu")
