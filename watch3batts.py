@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# vim: ts=2 sw=2
 #            0      1       2              3              4               5           6                                                                                                                                                              34
 CSV_HEADER=['time','state','error status','energy count','coloumb count','balancing','c1','c2','c3','c4','c5','c6','c7','c8','c9','c10','c11','c12','c13','c14','c15','c16','c17','c18','c19','c20','c21','c22','c23','c24','c25','c26','c27','c28','soc1','soc2','soc3','soc4','soc5','soc6','soc7','soc8','soc9','soc10','soc11','soc12','soc13','soc14','soc15','soc16','soc17','soc18','soc19','soc20','soc21','soc22','soc23','soc24','soc25','soc26','soc27','soc28',
 #            62          63     64                 65        66     67     68     69           70           71           72           73
@@ -15,6 +16,10 @@ with open('watch3batts.conf','r') as config:
     COMMAND_UTIL=config[0] # this line should be the path to the battery communications executable
     SERIAL=config[1] # this line of config file should be like /dev/ttyS2
     WEBUI_URL=config[2] # this line is the web address where we send battery info
+    LIMIT_MAX_CELL_VOLTAGE	=float(config[3])
+    LIMIT_MIN_CELL_VOLTAGE	=float(config[4])
+    LIMIT_MAX_CELL_TEMP	    =float(config[5])
+    LIMIT_MIN_CELL_TEMP	    =float(config[6])
 
 logfile=open('watch3batts'+time.strftime('%Y%m%d%H%M%S')+'.csv','w')
 
@@ -66,6 +71,8 @@ battery_stats = {} # 'max_cell_voltage','min_cell_voltage','max_cell_temp'
 while True:
     cellVoltages, allTemps, cellTemps = getAllBatts()
     battery_stats['max_cell_temp'] = max(cellTemps)
+    cellTemps[6]=25.0 # TODO: fix battery2 3rd thermistor
+    battery_stats['min_cell_temp'] = min(cellTemps)
     if (battery_stats['max_cell_temp'] > 50):
         print("                  ntc1,  ntc2,  ntc3, bmsld, bmsla, bmsud, bmsua, mcu")
         print("battery1 temps: "+str(allTemps[0:8]))
@@ -73,8 +80,27 @@ while True:
         print("battery3 temps: "+str(allTemps[16:24]))
     battery_stats['max_cell_voltage'] = max(cellVoltages)
     battery_stats['min_cell_voltage'] = min(cellVoltages)
-    print("max cell temp: "+str(battery_stats['max_cell_temp'])+"	"+"max cell voltage: "+str(battery_stats['max_cell_voltage'])+"   	"+"min cell voltage: "+str(battery_stats['min_cell_voltage']),end='	')
-    print('	Time: {}:{:02d}:{:02d}'.format(time.localtime().tm_hour,time.localtime().tm_min,time.localtime().tm_sec))
+    battery_stats['total_voltage'] = "{:.1f}".format(sum(cellVoltages))
+
+    if (battery_stats['max_cell_voltage'] < LIMIT_MAX_CELL_VOLTAGE
+    and battery_stats['min_cell_voltage'] > LIMIT_MIN_CELL_VOLTAGE
+    and battery_stats['max_cell_temp'] < LIMIT_MAX_CELL_TEMP
+    and battery_stats['min_cell_temp'] > LIMIT_MIN_CELL_TEMP):
+      battery_stats['state']='OK2CHARGE'
+    else:
+      battery_stats['state']='NOTOK'
+      print("NOTOK"
+        +'	limit_max_cell_voltage_ok:'+str(battery_stats['max_cell_voltage'] < LIMIT_MAX_CELL_VOLTAGE)
+        +'	limit_min_cell_voltage_ok:'+str(battery_stats['min_cell_voltage'] > LIMIT_MIN_CELL_VOLTAGE)
+        +'	limit_max_cell_temp_ok:'+str(battery_stats['max_cell_temp'] < LIMIT_MAX_CELL_TEMP)
+        +'	limit_min_cell_temp_ok:'+str(battery_stats['min_cell_temp'] > LIMIT_MIN_CELL_TEMP))
+
+    print('	Time: {}:{:02d}:{:02d}'.format(time.localtime().tm_hour,time.localtime().tm_min,time.localtime().tm_sec),end='	')
+    print("max cell temp: "+str(battery_stats['max_cell_temp'])
+      +"	max cell voltage: "+str(battery_stats['max_cell_voltage'])
+      +"	min cell voltage: "+str(battery_stats['min_cell_voltage'])
+      +"	total voltage: "+str(battery_stats['total_voltage'])
+      +"	state: "+battery_stats['state'])
     sendBatteryStats(battery_stats)
     logString = str(int(time.time()))+','+str(cellVoltages)[1:-1]+','+str(allTemps)[1:-1]
     logfile.write(logString+'\n')
