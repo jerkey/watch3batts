@@ -38,7 +38,7 @@ def sendBatteryStats(battery_stats):
     return response
 
 def getAllBatts():
-    cellVoltages, allTemps = [],[]
+    cellVoltages, allTemps, cellSOCs = [],[],[]
     battery1 = grabBatteryCsv('0xFF')
     if (len(battery1)) != 77:
         print('battery1 read error: '+str(battery1))
@@ -52,10 +52,13 @@ def getAllBatts():
         print('battery3 read error: '+str(battery3))
         battery3 = badData
     for i in range(28):
+        cellSOCs.append(float(battery1[34+i]))
         cellVoltages.append(float(battery1[6+i]))
     for i in range(28):
+        cellSOCs.append(float(battery2[34+i]))
         cellVoltages.append(float(battery2[6+i]))
     for i in range(28):
+        cellSOCs.append(float(battery3[34+i]))
         cellVoltages.append(float(battery3[6+i]))
     for i in range(8):
         allTemps.append(float(battery1[66+i]))
@@ -64,12 +67,12 @@ def getAllBatts():
     for i in range(8):
         allTemps.append(float(battery3[66+i]))
         cellTemps = allTemps[0:3] + allTemps[8:11] + allTemps[16:19]
-    return cellVoltages, allTemps, cellTemps
+    return cellVoltages, allTemps, cellTemps, cellSOCs
 
-battery_stats = {} # 'max_cell_voltage','min_cell_voltage','max_cell_temp'
+battery_stats = {}
 
 while True:
-    cellVoltages, allTemps, cellTemps = getAllBatts()
+    cellVoltages, allTemps, cellTemps, cellSOCs = getAllBatts()
     battery_stats['max_cell_temp'] = max(cellTemps)
     cellTemps[5]=25.0 # TODO: fix battery2 3rd thermistor
     battery_stats['min_cell_temp'] = min(cellTemps)
@@ -81,6 +84,9 @@ while True:
     battery_stats['max_cell_voltage'] = max(cellVoltages)
     battery_stats['min_cell_voltage'] = min(cellVoltages)
     battery_stats['total_voltage'] = "{:.1f}".format(sum(cellVoltages))
+    battery_stats['max_cell_SOC'] = max(cellSOCs)
+    battery_stats['min_cell_SOC'] = min(cellSOCs)
+    battery_stats['average_SOC'] = "{:.1f}".format(sum(cellSOCs)/len(cellSOCs))
 
     if (battery_stats['max_cell_voltage'] < LIMIT_MAX_CELL_VOLTAGE
     and battery_stats['min_cell_voltage'] > LIMIT_MIN_CELL_VOLTAGE
