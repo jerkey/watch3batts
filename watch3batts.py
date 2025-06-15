@@ -20,6 +20,7 @@ with open('watch3batts.conf','r') as config:
     LIMIT_MIN_CELL_VOLTAGE	=float(config[4])
     LIMIT_MAX_CELL_TEMP	    =float(config[5])
     LIMIT_MIN_CELL_TEMP	    =float(config[6])
+    LIMIT_MAX_CELL_SOC	    =float(config[7])
 
 logfile=open('watch3batts'+time.strftime('%Y%m%d%H%M%S')+'.csv','w')
 
@@ -91,7 +92,8 @@ while True:
     if (battery_stats['max_cell_voltage'] < LIMIT_MAX_CELL_VOLTAGE
     and battery_stats['min_cell_voltage'] > LIMIT_MIN_CELL_VOLTAGE
     and battery_stats['max_cell_temp'] < LIMIT_MAX_CELL_TEMP
-    and battery_stats['min_cell_temp'] > LIMIT_MIN_CELL_TEMP):
+    and battery_stats['min_cell_temp'] > LIMIT_MIN_CELL_TEMP
+    and battery_stats['max_cell_SOC'] < LIMIT_MAX_CELL_SOC):
       battery_stats['state']='OK2CHARGE'
     else:
       battery_stats['state']='NOTOK'
@@ -106,6 +108,7 @@ while True:
       +"	max cell voltage: "+str(battery_stats['max_cell_voltage'])
       +"	min cell voltage: "+str(battery_stats['min_cell_voltage'])
       +"	total voltage: "+str(battery_stats['total_voltage'])
+      +"	max cell SOC: "+str(battery_stats['max_cell_SOC'])
       +"	state: "+battery_stats['state'])
     sendBatteryStats(battery_stats)
     logString = str(int(time.time()))+','+str(cellVoltages)[1:-1]+','+str(allTemps)[1:-1]
